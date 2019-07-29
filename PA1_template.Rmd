@@ -10,25 +10,25 @@ output:
 
 ```{r echo=TRUE}
 activity <- read.csv("~/GitHub/RepData_PeerAssessment1/activity/activity.csv")
-View(activity)
+activityw <- reshape(activity, direction="wide", timevar="interval", idvar="date", v.names="steps")
+colnames(activityw)[-1] <- substring(colnames(activityw)[-1],7)
 ```
 
 ## What is mean total number of steps taken per day?
 
 ```{r echo=TRUE}
-daysums <- aggregate(activity$steps~activity$date, FUN=sum)
-hist(daysums$`activity$steps`,breaks=seq(0,25000,by=1000))
-mean(daysums$`activity$steps`)
-median(daysums$`activity$steps`)
+daysumsw <- rowSums(activityw[,-1], na.rm=TRUE)
+hist(daysumsw,breaks=seq(0,25000,by=1000))
+mean(daysumsw, na.rm=TRUE)
+median(daysumsw, na.rm=TRUE)
 ```
 
 ## What is the average daily activity pattern?
 
 ```{r echo=TRUE}
-timemeans <- aggregate(activity$steps~activity$interval, FUN=mean)
-timemeans$dectime <- timemeans$`activity$interval` %/% 100 + timemeans$`activity$interval`%% 100 / 60
-plot(timemeans$dectime,timemeans$`activity$steps`,type="l")
-timemeans$`activity$interval`[which.max(timemeans$`activity$steps`)]
+timemeansw <- colMeans(activityw[,-1], na.rm=TRUE)
+dectimes <- as.numeric(names(timemeansw)) %/% 100 + as.numeric(names(timemeansw)) %% 100 / 60
+plot(dectimes,timemeansw,type="l")
 ```
 
 ## Imputing missing values

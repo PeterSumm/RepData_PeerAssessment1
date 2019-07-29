@@ -8,18 +8,37 @@ output:
 
 ## Loading and preprocessing the data
 
-
+```{r echo=TRUE}
+activity <- read.csv("~/GitHub/RepData_PeerAssessment1/activity/activity.csv")
+View(activity)
+```
 
 ## What is mean total number of steps taken per day?
 
-
+```{r echo=TRUE}
+daysums <- aggregate(activity$steps~activity$date, FUN=sum)
+hist(daysums$`activity$steps`,breaks=seq(0,25000,by=1000))
+mean(daysums$`activity$steps`)
+median(daysums$`activity$steps`)
+```
 
 ## What is the average daily activity pattern?
 
-
+```{r echo=TRUE}
+timemeans <- aggregate(activity$steps~activity$interval, FUN=mean)
+timemeans$dectime <- timemeans$`activity$interval` %/% 100 + timemeans$`activity$interval`%% 100 / 60
+plot(timemeans$dectime,timemeans$`activity$steps`,type="l")
+timemeans$`activity$interval`[which.max(timemeans$`activity$steps`)]
+```
 
 ## Imputing missing values
 
-
+```{r echo=TRUE}
+for (i in seq(1,length(activity$steps))) {
+  if (is.na(activity$steps[i])) {
+    activity$steps[i] <- mean(activity$steps[activity$date == activity$date[i]])
+  }        
+}
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?

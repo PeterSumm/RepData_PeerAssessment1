@@ -46,3 +46,12 @@ median(daysumsf, na.rm=TRUE)
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r echo=TRUE}
+weekday <- weekdays(as.Date(activityf$date,format="%Y-%m-%d"))
+weekend <- (weekday == "Saturday") | (weekday == "Sunday")
+weekdaymeans <- colMeans(activityf[!weekend,-1], na.rm=TRUE)
+weekendmeans <- colMeans(activityf[weekend,-1], na.rm=TRUE)
+plot(dectimes, weekdaymeans, type="l")
+plot(dectimes, weekendmeans, type="l")
+```

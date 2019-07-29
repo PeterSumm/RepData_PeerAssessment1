@@ -34,9 +34,10 @@ timemeans$`activity$interval`[which.max(timemeans$`activity$steps`)]
 ## Imputing missing values
 
 ```{r echo=TRUE}
-for (i in seq(1,length(activity$steps))) {
-  if (is.na(activity$steps[i])) {
-    activity$steps[i] <- mean(activity$steps[activity$date == activity$date[i]])
+expected <- activity
+for (i in seq(1,length(expected$steps))) {
+  if (is.na(expected$steps[i])) {
+    expected$steps[i] <- timemeans$`activity$steps`[]
   }        
 }
 ```

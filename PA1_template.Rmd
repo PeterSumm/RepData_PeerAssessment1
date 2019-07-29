@@ -17,29 +17,32 @@ colnames(activityw)[-1] <- substring(colnames(activityw)[-1],7)
 ## What is mean total number of steps taken per day?
 
 ```{r echo=TRUE}
-daysumsw <- rowSums(activityw[,-1], na.rm=TRUE)
-hist(daysumsw,breaks=seq(0,25000,by=1000))
-mean(daysumsw, na.rm=TRUE)
-median(daysumsw, na.rm=TRUE)
+daysums <- rowSums(activityw[,-1], na.rm=TRUE)
+hist(daysums,breaks=seq(0,25000,by=1000))
+mean(daysums, na.rm=TRUE)
+median(daysums, na.rm=TRUE)
 ```
 
 ## What is the average daily activity pattern?
 
 ```{r echo=TRUE}
-timemeansw <- colMeans(activityw[,-1], na.rm=TRUE)
-dectimes <- as.numeric(names(timemeansw)) %/% 100 + as.numeric(names(timemeansw)) %% 100 / 60
-plot(dectimes,timemeansw,type="l")
+timemeans <- colMeans(activityw[,-1], na.rm=TRUE)
+dectimes <- as.numeric(names(timemeans)) %/% 100 + as.numeric(names(timemeans)) %% 100 / 60
+plot(dectimes,timemeans,type="l")
 ```
 
 ## Imputing missing values
 
 ```{r echo=TRUE}
-expected <- activity
-for (i in seq(1,length(expected$steps))) {
-  if (is.na(expected$steps[i])) {
-    expected$steps[i] <- timemeans$`activity$steps`[]
-  }        
+activityf <- activityw
+for(i in 2:ncol(activityw)) {
+  activityf[is.na(activityw[,i]),i] <- timemeans[i-1]
 }
+daysumsf <- rowSums(activityf[,-1], na.rm=TRUE)
+hist(daysumsf,breaks=seq(0,25000,by=1000))
+mean(daysumsf, na.rm=TRUE)
+median(daysumsf, na.rm=TRUE)
+
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?

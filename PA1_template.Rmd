@@ -10,7 +10,9 @@ output:
 
 ```{r echo=TRUE}
 activity <- read.csv("~/GitHub/RepData_PeerAssessment1/activity/activity.csv")
+# Convert to wide format
 activityw <- reshape(activity, direction="wide", timevar="interval", idvar="date", v.names="steps")
+# Make the column names equal to the times
 colnames(activityw)[-1] <- substring(colnames(activityw)[-1],7)
 ```
 
@@ -18,40 +20,50 @@ colnames(activityw)[-1] <- substring(colnames(activityw)[-1],7)
 
 ```{r echo=TRUE}
 daysums <- rowSums(activityw[,-1], na.rm=TRUE)
-hist(daysums,breaks=seq(0,25000,by=1000))
-mean(daysums, na.rm=TRUE)
-median(daysums, na.rm=TRUE)
+hist(daysums,breaks=seq(0,25000,by=1000), main="Histogram of Daily Steps",  xlab="Steps")
+cat("The mean number of steps per day is ",round(mean(daysums, na.rm=TRUE)),".\n", sep="")
+cat("The median number of steps per day is ",round(median(daysums, na.rm=TRUE)),".\n", sep="")
 ```
 
 ## What is the average daily activity pattern?
 
 ```{r echo=TRUE}
 timemeans <- colMeans(activityw[,-1], na.rm=TRUE)
-dectimes <- as.numeric(names(timemeans)) %/% 100 + as.numeric(names(timemeans)) %% 100 / 60
-plot(dectimes,timemeans,type="l")
+# Calculate times in decimal hours.
+dectimes <- 100 * (as.numeric(names(timemeans)) %/% 100 + as.numeric(names(timemeans)) %% 100 / 60)
+plot(dectimes,timemeans,type="l", xlab="Interval", ylab="Number of Steps", main=" Average Daily Activity Pattern")
 ```
 
 ## Imputing missing values
 
 ```{r echo=TRUE}
+# Create a dataframe with NAs replaced with the mean for that time.
 activityf <- activityw
 for(i in 2:ncol(activityw)) {
   activityf[is.na(activityw[,i]),i] <- timemeans[i-1]
 }
+
+# Calculate the day totals again.
 daysumsf <- rowSums(activityf[,-1], na.rm=TRUE)
-hist(daysumsf,breaks=seq(0,25000,by=1000))
-mean(daysumsf, na.rm=TRUE)
-median(daysumsf, na.rm=TRUE)
+hist(daysumsf,breaks=seq(0,25000,by=1000), main="Histogram of Daily Steps (after imputing missing values)",  xlab="Steps")
+cat("The mean number of steps per day is now ",round(mean(daysumsf, na.rm=TRUE)),".\n", sep="")
+cat("The median number of steps per day is now ",round(median(daysumsf, na.rm=TRUE)),".\n", sep="")
 
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 ```{r echo=TRUE}
+#Calculate a vector of day names.
 weekday <- weekdays(as.Date(activityf$date,format="%Y-%m-%d"))
+#Calculate a vector of booleans indicating weekend days.
 weekend <- (weekday == "Saturday") | (weekday == "Sunday")
+#Caclculate the interval means for each and plot them.
 weekdaymeans <- colMeans(activityf[!weekend,-1], na.rm=TRUE)
 weekendmeans <- colMeans(activityf[weekend,-1], na.rm=TRUE)
-plot(dectimes, weekdaymeans, type="l")
-plot(dectimes, weekendmeans, type="l")
+library(lattice)
+eplot <- xyplot(weekendmeans~dectimes, type="l", xlab="", ylab="Weekend steps", ylim=c(0,250))
+dplot <- xyplot(weekdaymeans~dectimes, type="l", xlab="interval", ylab="Weekday steps", ylim=c(0,250))
+print(eplot, position=c(0, .42, 1, 1), more=TRUE)
+print(dplot, position=c(0, 0, 1, .58))
 ```

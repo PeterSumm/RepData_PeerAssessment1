@@ -1,0 +1,57 @@
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
+## Loading and preprocessing the data
+
+```{r echo=TRUE}
+activity <- read.csv("~/GitHub/RepData_PeerAssessment1/activity/activity.csv")
+activityw <- reshape(activity, direction="wide", timevar="interval", idvar="date", v.names="steps")
+colnames(activityw)[-1] <- substring(colnames(activityw)[-1],7)
+```
+
+## What is mean total number of steps taken per day?
+
+```{r echo=TRUE}
+daysums <- rowSums(activityw[,-1], na.rm=TRUE)
+hist(daysums,breaks=seq(0,25000,by=1000))
+mean(daysums, na.rm=TRUE)
+median(daysums, na.rm=TRUE)
+```
+
+## What is the average daily activity pattern?
+
+```{r echo=TRUE}
+timemeans <- colMeans(activityw[,-1], na.rm=TRUE)
+dectimes <- as.numeric(names(timemeans)) %/% 100 + as.numeric(names(timemeans)) %% 100 / 60
+plot(dectimes,timemeans,type="l")
+```
+
+## Imputing missing values
+
+```{r echo=TRUE}
+activityf <- activityw
+for(i in 2:ncol(activityw)) {
+  activityf[is.na(activityw[,i]),i] <- timemeans[i-1]
+}
+daysumsf <- rowSums(activityf[,-1], na.rm=TRUE)
+hist(daysumsf,breaks=seq(0,25000,by=1000))
+mean(daysumsf, na.rm=TRUE)
+median(daysumsf, na.rm=TRUE)
+
+```
+
+## Are there differences in activity patterns between weekdays and weekends?
+
+```{r echo=TRUE}
+weekday <- weekdays(as.Date(activityf$date,format="%Y-%m-%d"))
+weekend <- (weekday == "Saturday") | (weekday == "Sunday")
+weekdaymeans <- colMeans(activityf[!weekend,-1], na.rm=TRUE)
+weekendmeans <- colMeans(activityf[weekend,-1], na.rm=TRUE)
+plot(dectimes, weekdaymeans, type="l")
+plot(dectimes, weekendmeans, type="l")
+```

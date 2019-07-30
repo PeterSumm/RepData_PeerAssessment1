@@ -29,14 +29,17 @@ cat("The median number of steps per day is ",round(median(daysums, na.rm=TRUE)),
 
 ```{r echo=TRUE}
 timemeans <- colMeans(activityw[,-1], na.rm=TRUE)
-# Calculate times in decimal hours.
+# Calculate times in decimal hours and then do the plot.
 dectimes <- 100 * (as.numeric(names(timemeans)) %/% 100 + as.numeric(names(timemeans)) %% 100 / 60)
 plot(dectimes,timemeans,type="l", xlab="Interval", ylab="Number of Steps", main=" Average Daily Activity Pattern")
+cat("The maximum occurs in the interval starting at ",names(timemeans)[which.max(timemeans)],".\n",sep="")
 ```
 
 ## Imputing missing values
 
 ```{r echo=TRUE}
+cat("The dataset had ",sum(is.na(activity$steps)), " rows with missing values.\n", sep="")
+
 # Create a dataframe with NAs replaced with the mean for that time.
 activityf <- activityw
 for(i in 2:ncol(activityw)) {
@@ -48,7 +51,7 @@ daysumsf <- rowSums(activityf[,-1], na.rm=TRUE)
 hist(daysumsf,breaks=seq(0,25000,by=1000), main="Histogram of Daily Steps (after imputing missing values)",  xlab="Steps")
 cat("The mean number of steps per day is now ",round(mean(daysumsf, na.rm=TRUE))," rather than ",round(mean(daysums, na.rm=TRUE)),".\n", sep="")
 cat("The median number of steps per day is now ",round(median(daysumsf, na.rm=TRUE))," rather than ",round(median(daysums, na.rm=TRUE)),".\n", sep="")
-
+cat("The total number of steps has",ifelse(sum(daysumsf, na.rm=TRUE) > sum(daysums, na.rm=TRUE),"increased.","decreased."))
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -62,14 +65,8 @@ weekend <- (weekday == "Saturday") | (weekday == "Sunday")
 weekdaymeans <- colMeans(activityf[!weekend,-1], na.rm=TRUE)
 weekendmeans <- colMeans(activityf[weekend,-1], na.rm=TRUE)
 library(lattice)
-eplot <- xyplot(weekendmeans~dectimes, type="l", xlab="", ylab="Weekend steps", ylim=c(0,250))
-dplot <- xyplot(weekdaymeans~dectimes, type="l", xlab="interval", ylab="Weekday steps", ylim=c(0,250))
-print(eplot, position=c(0, .42, 1, 1), more=TRUE)
-print(dplot, position=c(0, 0, 1, .58))
-
-dfe <- data.frame(times=dectimes, means=weekendmeans, daytype="weekend")
 dfd <- data.frame(times=dectimes, means=weekdaymeans, daytype="weekday")
-df <- rbind(dfe,dfd)
-df$daytype <- as.factor(df$daytype)
-xyplot(means~times|daytype, data=df, type="l", xlab="", ylab="Number of steps",layout=c(1,2), ylim=c(0,250))
+dfe <- data.frame(times=dectimes, means=weekendmeans, daytype="weekend")
+df <- rbind(dfd,dfe)
+xyplot(means~times|daytype, data=df, type="l", xlab="Interval", ylab="Number of steps",layout=c(1,2), ylim=c(0,250))
 ```

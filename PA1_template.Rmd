@@ -46,8 +46,8 @@ for(i in 2:ncol(activityw)) {
 # Calculate the day totals again.
 daysumsf <- rowSums(activityf[,-1], na.rm=TRUE)
 hist(daysumsf,breaks=seq(0,25000,by=1000), main="Histogram of Daily Steps (after imputing missing values)",  xlab="Steps")
-cat("The mean number of steps per day is now ",round(mean(daysumsf, na.rm=TRUE)),".\n", sep="")
-cat("The median number of steps per day is now ",round(median(daysumsf, na.rm=TRUE)),".\n", sep="")
+cat("The mean number of steps per day is now ",round(mean(daysumsf, na.rm=TRUE))," rather than ",round(mean(daysums, na.rm=TRUE)),".\n", sep="")
+cat("The median number of steps per day is now ",round(median(daysumsf, na.rm=TRUE))," rather than ",round(median(daysums, na.rm=TRUE)),".\n", sep="")
 
 ```
 
@@ -66,4 +66,10 @@ eplot <- xyplot(weekendmeans~dectimes, type="l", xlab="", ylab="Weekend steps", 
 dplot <- xyplot(weekdaymeans~dectimes, type="l", xlab="interval", ylab="Weekday steps", ylim=c(0,250))
 print(eplot, position=c(0, .42, 1, 1), more=TRUE)
 print(dplot, position=c(0, 0, 1, .58))
+
+dfe <- data.frame(times=dectimes, means=weekendmeans, daytype="weekend")
+dfd <- data.frame(times=dectimes, means=weekdaymeans, daytype="weekday")
+df <- rbind(dfe,dfd)
+df$daytype <- as.factor(df$daytype)
+xyplot(means~times|daytype, data=df, type="l", xlab="", ylab="Number of steps",layout=c(1,2), ylim=c(0,250))
 ```

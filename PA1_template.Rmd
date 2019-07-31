@@ -19,20 +19,29 @@ colnames(activityw)[-1] <- substring(colnames(activityw)[-1],7)
 ## What is mean total number of steps taken per day?
 
 ```{r echo=TRUE}
-daysums <- rowSums(activityw[,-1], na.rm=TRUE)
-hist(daysums,breaks=seq(0,25000,by=1000), main="Histogram of Daily Steps",  xlab="Steps")
-cat("The mean number of steps per day is ",round(mean(daysums, na.rm=TRUE)),".\n", sep="")
-cat("The median number of steps per day is ",round(median(daysums, na.rm=TRUE)),".\n", sep="")
+daysumsw <- rowSums(activityw[,-1], na.rm=TRUE)
+hist(daysumsw,breaks=seq(0,25000,by=1000), main="Histogram of Daily Steps",  xlab="Steps")
+
+daysums <- aggregate(activity[,"steps"], by=list(date=activity$date), FUN=sum, na.rm=TRUE)
+hist(daysums$x,breaks=seq(0,25000,by=1000), main="Histogram of Daily Steps", xlab="Steps")
+
+cat("The mean number of steps per day is ",round(mean(daysums$x, na.rm=TRUE)),".\n", sep="")
+cat("The median number of steps per day is ",round(median(daysums$x, na.rm=TRUE)),".\n", sep="")
 ```
 
 ## What is the average daily activity pattern?
 
 ```{r echo=TRUE}
-timemeans <- colMeans(activityw[,-1], na.rm=TRUE)
+timemeansw <- colMeans(activityw[,-1], na.rm=TRUE)
 # Calculate times in decimal hours and then do the plot.
-dectimes <- 100 * (as.numeric(names(timemeans)) %/% 100 + as.numeric(names(timemeans)) %% 100 / 60)
-plot(dectimes,timemeans,type="l", xlab="Interval", ylab="Number of Steps", main=" Average Daily Activity Pattern")
-cat("The maximum occurs in the interval starting at ",names(timemeans)[which.max(timemeans)],".\n",sep="")
+dectimesw <- 100 * (as.numeric(names(timemeansw)) %/% 100 + as.numeric(names(timemeansw)) %% 100 / 60)
+plot(dectimesw, timemeansw, type="l", xlab="Interval", ylab="Number of Steps", main=" Average Daily Activity Pattern")
+
+timemeans <- aggregate(activity[,"steps"], by=list(interval=activity$interval), FUN=mean, na.rm=TRUE)
+timemeans$dectime <- 100 * (timemeans$interval %/% 100 + timemeans$interval %% 100 / 60)
+plot(timemeans$dectime, timemeans$x, type="l", xlab="Interval", ylab="Number of Steps", main=" Average Daily Activity Pattern")
+
+cat("The maximum occurs in the interval starting at ",timemeans$interval[which.max(timemeans$x)],".\n",sep="")
 ```
 
 ## Imputing missing values
@@ -40,33 +49,30 @@ cat("The maximum occurs in the interval starting at ",names(timemeans)[which.max
 ```{r echo=TRUE}
 cat("The dataset had ",sum(is.na(activity$steps)), " rows with missing values.\n", sep="")
 
-# Create a dataframe with NAs replaced with the mean for that time.
-activityf <- activityw
-for(i in 2:ncol(activityw)) {
-  activityf[is.na(activityw[,i]),i] <- timemeans[i-1]
-}
+# Create a column with NAs replaced with the mean for that time.
+activity$stepsi <- ifelse(is.na(activity$steps),timemeans$x[match(activity$interval,timemeans$interval)],activity$steps)
 
 # Calculate the day totals again.
-daysumsf <- rowSums(activityf[,-1], na.rm=TRUE)
-hist(daysumsf,breaks=seq(0,25000,by=1000), main="Histogram of Daily Steps (after imputing missing values)",  xlab="Steps")
-cat("The mean number of steps per day is now ",round(mean(daysumsf, na.rm=TRUE))," rather than ",round(mean(daysums, na.rm=TRUE)),".\n", sep="")
-cat("The median number of steps per day is now ",round(median(daysumsf, na.rm=TRUE))," rather than ",round(median(daysums, na.rm=TRUE)),".\n", sep="")
-cat("The total number of steps has",ifelse(sum(daysumsf, na.rm=TRUE) > sum(daysums, na.rm=TRUE),"increased.","decreased."))
+daysumsi <- aggregate(activity[,"stepsi"], by=list(date=activity$date), FUN=sum, na.rm=TRUE)
+hist(daysumsi$x,breaks=seq(0,25000,by=1000), main="Histogram of Daily Steps (after imputation", xlab="Steps")
+
+cat("The mean number of steps per day is now ",round(mean(daysumsi$x, na.rm=TRUE))," rather than ",round(mean(daysums$x, na.rm=TRUE)),".\n", sep="")
+cat("The median number of steps per day is now ",round(median(daysumsi$x, na.rm=TRUE))," rather than ",round(median(daysums$x, na.rm=TRUE)),".\n", sep="")
+cat("The total number of steps has",ifelse(sum(daysumsi$x, na.rm=TRUE) > sum(daysums$x, na.rm=TRUE),"increased.","decreased."))
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 ```{r echo=TRUE}
 #Calculate a vector of day names.
-weekday <- weekdays(as.Date(activityf$date,format="%Y-%m-%d"))
+activity$day <- weekdays(as.Date(activity$date,format="%Y-%m-%d"))
 #Calculate a vector of booleans indicating weekend days.
-weekend <- (weekday == "Saturday") | (weekday == "Sunday")
-#Caclculate the interval means for each and plot them.
-weekdaymeans <- colMeans(activityf[!weekend,-1], na.rm=TRUE)
-weekendmeans <- colMeans(activityf[weekend,-1], na.rm=TRUE)
+activity$daytype <- as.factor(ifelse((activity$day == "Saturday") | (activity$day == "Sunday"),"weekend","weekday"))
+
+#Caclculate the interval means for each day type (weekday or weekend).
+timemeansi <- aggregate(activity[,"stepsi"], by=list(interval=activity$interval,daytype=activity$daytype), FUN=mean, na.rm=TRUE)
+timemeansi$dectime <- 100 * (timemeansi$interval %/% 100 + timemeansi$interval %% 100 / 60)
+
 library(lattice)
-dfd <- data.frame(times=dectimes, means=weekdaymeans, daytype="weekday")
-dfe <- data.frame(times=dectimes, means=weekendmeans, daytype="weekend")
-df <- rbind(dfd,dfe)
-xyplot(means~times|daytype, data=df, type="l", xlab="Interval", ylab="Number of steps",layout=c(1,2), ylim=c(0,250))
+xyplot(x~dectime|daytype, data=timemeansi, type="l", xlab="Interval", ylab="Number of steps",layout=c(1,2), ylim=c(0,250))
 ```

@@ -8,10 +8,10 @@ output:
 
 ## Loading and preprocessing the data
 
-(The pre-processing occurs under each question.)
-
 ```{r echo=TRUE}
 activity <- read.csv("~/GitHub/RepData_PeerAssessment1/activity/activity.csv")
+#Strip out the entries with no data.
+activity <- activity[!is.na(activity$steps),]
 ```
 
 ## What is mean total number of steps taken per day?
@@ -44,6 +44,8 @@ cat("The maximum occurs in the interval starting at ",timemeans$interval[which.m
 ## Imputing missing values
 
 ```{r echo=TRUE}
+#Re-read the data file.
+activity <- read.csv("~/GitHub/RepData_PeerAssessment1/activity/activity.csv")
 cat("The dataset had ",sum(is.na(activity$steps)), " rows with missing values.\n", sep="")
 
 # Create a column with NAs replaced with the mean for that interval.

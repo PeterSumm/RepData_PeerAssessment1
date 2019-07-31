@@ -8,11 +8,11 @@ output:
 
 ## Loading and preprocessing the data
 
-(The pre-processing occurs under each question.)
-
 
 ```r
 activity <- read.csv("~/GitHub/RepData_PeerAssessment1/activity/activity.csv")
+#Strip out the entries with no data.
+activity <- activity[!is.na(activity$steps),]
 ```
 
 ## What is mean total number of steps taken per day?
@@ -33,7 +33,7 @@ cat("The mean number of steps per day is ",round(mean(daysums$x, na.rm=TRUE)),".
 ```
 
 ```
-## The mean number of steps per day is 9354.
+## The mean number of steps per day is 10766.
 ```
 
 ```r
@@ -41,7 +41,7 @@ cat("The median number of steps per day is ",round(median(daysums$x, na.rm=TRUE)
 ```
 
 ```
-## The median number of steps per day is 10395.
+## The median number of steps per day is 10765.
 ```
 
 ## What is the average daily activity pattern?
@@ -71,6 +71,8 @@ cat("The maximum occurs in the interval starting at ",timemeans$interval[which.m
 
 
 ```r
+#Re-read the data file.
+activity <- read.csv("~/GitHub/RepData_PeerAssessment1/activity/activity.csv")
 cat("The dataset had ",sum(is.na(activity$steps)), " rows with missing values.\n", sep="")
 ```
 
@@ -96,7 +98,7 @@ cat("The mean number of steps per day is now ",round(mean(daysumsi$x, na.rm=TRUE
 ```
 
 ```
-## The mean number of steps per day is now 10766 rather than 9354.
+## The mean number of steps per day is now 10766 rather than 10766.
 ```
 
 ```r
@@ -104,7 +106,7 @@ cat("The median number of steps per day is now ",round(median(daysumsi$x, na.rm=
 ```
 
 ```
-## The median number of steps per day is now 10766 rather than 10395.
+## The median number of steps per day is now 10766 rather than 10765.
 ```
 
 ```r

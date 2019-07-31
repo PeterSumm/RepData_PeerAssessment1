@@ -10,42 +10,75 @@ output:
 
 (The pre-processing occurs under each question.)
 
-```{r echo=TRUE}
+
+```r
 activity <- read.csv("~/GitHub/RepData_PeerAssessment1/activity/activity.csv")
 ```
 
 ## What is mean total number of steps taken per day?
 
-```{r echo=TRUE}
+
+```r
 # Calculate the day totals.
 daysums <- aggregate(activity[,"steps"], by=list(date=activity$date), FUN=sum, na.rm=TRUE)
 #And plot a histogram.
 hist(daysums$x,breaks=seq(0,25000,by=1000), main="Histogram of Daily Steps", xlab="Steps")
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
+```r
 #Now answer the questions.
 cat("The mean number of steps per day is ",round(mean(daysums$x, na.rm=TRUE)),".\n", sep="")
+```
+
+```
+## The mean number of steps per day is 9354.
+```
+
+```r
 cat("The median number of steps per day is ",round(median(daysums$x, na.rm=TRUE)),".\n", sep="")
+```
+
+```
+## The median number of steps per day is 10395.
 ```
 
 ## What is the average daily activity pattern?
 
-```{r echo=TRUE}
+
+```r
 #Calculate the interval means.
 timemeans <- aggregate(activity[,"steps"], by=list(interval=activity$interval), FUN=mean, na.rm=TRUE)
 #Calculate decimal hours.
 timemeans$dectime <- 100 * (timemeans$interval %/% 100 + timemeans$interval %% 100 / 60)
 #And plot the means.
 plot(timemeans$dectime, timemeans$x, type="l", xlab="Interval", ylab="Number of Steps", main=" Average Daily Activity Pattern")
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+```r
 #Now answer the question.
 cat("The maximum occurs in the interval starting at ",timemeans$interval[which.max(timemeans$x)],".\n",sep="")
 ```
 
+```
+## The maximum occurs in the interval starting at 835.
+```
+
 ## Imputing missing values
 
-```{r echo=TRUE}
-cat("The dataset had ",sum(is.na(activity$steps)), " rows with missing values.\n", sep="")
 
+```r
+cat("The dataset had ",sum(is.na(activity$steps)), " rows with missing values.\n", sep="")
+```
+
+```
+## The dataset had 2304 rows with missing values.
+```
+
+```r
 # Create a column with NAs replaced with the mean for that interval.
 activity$stepsi <- ifelse(is.na(activity$steps),timemeans$x[match(activity$interval,timemeans$interval)],activity$steps)
 
@@ -53,16 +86,39 @@ activity$stepsi <- ifelse(is.na(activity$steps),timemeans$x[match(activity$inter
 daysumsi <- aggregate(activity[,"stepsi"], by=list(date=activity$date), FUN=sum, na.rm=TRUE)
 #And redo the histogram.
 hist(daysumsi$x,breaks=seq(0,25000,by=1000), main="Histogram of Daily Steps (after imputation", xlab="Steps")
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+```r
 #Now answer the questions.
 cat("The mean number of steps per day is now ",round(mean(daysumsi$x, na.rm=TRUE))," rather than ",round(mean(daysums$x, na.rm=TRUE)),".\n", sep="")
+```
+
+```
+## The mean number of steps per day is now 10766 rather than 9354.
+```
+
+```r
 cat("The median number of steps per day is now ",round(median(daysumsi$x, na.rm=TRUE))," rather than ",round(median(daysums$x, na.rm=TRUE)),".\n", sep="")
+```
+
+```
+## The median number of steps per day is now 10766 rather than 10395.
+```
+
+```r
 cat("The total number of steps has",ifelse(sum(daysumsi$x, na.rm=TRUE) > sum(daysums$x, na.rm=TRUE),"increased.","decreased."))
+```
+
+```
+## The total number of steps has increased.
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r echo=TRUE}
+
+```r
 #Generate a column day names.
 activity$day <- weekdays(as.Date(activity$date,format="%Y-%m-%d"))
 #Generate a column of day types (weekend or weekday).
@@ -75,7 +131,15 @@ timemeansi$dectime <- 100 * (timemeansi$interval %/% 100 + timemeansi$interval %
 #Now plot the two graphs to show that they're different.
 library(lattice)
 xyplot(x~dectime|daytype, data=timemeansi, type="l", xlab="Interval", ylab="Number of steps",layout=c(1,2), ylim=c(0,250))
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+
+```r
 #Now answer the questions.
 cat("Yep, they look different to me.  The weekend steps are more spread out through the day.")
+```
+
+```
+## Yep, they look different to me.  The weekend steps are more spread out through the day.
 ```

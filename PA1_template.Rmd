@@ -70,7 +70,7 @@ activity$day <- weekdays(as.Date(activity$date,format="%Y-%m-%d"))
 activity$daytype <- as.factor(ifelse((activity$day == "Saturday") | (activity$day == "Sunday"),"weekend","weekday"))
 
 #Caclculate the interval means for each day type (weekday or weekend).
-timemeansi <- aggregate(activity[,"stepsi"], by=list(interval=activity$interval,daytype=activity$daytype), FUN=mean, na.rm=TRUE)
+timemeansi <- aggregate(activity[,"stepsi"], by=list(interval=activity$interval ,daytype=activity$daytype), FUN=mean, na.rm=TRUE)
 timemeansi$dectime <- 100 * (timemeansi$interval %/% 100 + timemeansi$interval %% 100 / 60)
 
 library(lattice)

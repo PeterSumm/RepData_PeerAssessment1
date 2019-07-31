@@ -11,17 +11,11 @@ output:
 ```{r echo=TRUE}
 activity <- read.csv("~/GitHub/RepData_PeerAssessment1/activity/activity.csv")
 # Convert to wide format
-activityw <- reshape(activity, direction="wide", timevar="interval", idvar="date", v.names="steps")
-# Make the column names equal to the times
-colnames(activityw)[-1] <- substring(colnames(activityw)[-1],7)
 ```
 
 ## What is mean total number of steps taken per day?
 
 ```{r echo=TRUE}
-daysumsw <- rowSums(activityw[,-1], na.rm=TRUE)
-hist(daysumsw,breaks=seq(0,25000,by=1000), main="Histogram of Daily Steps",  xlab="Steps")
-
 daysums <- aggregate(activity[,"steps"], by=list(date=activity$date), FUN=sum, na.rm=TRUE)
 hist(daysums$x,breaks=seq(0,25000,by=1000), main="Histogram of Daily Steps", xlab="Steps")
 
@@ -32,11 +26,6 @@ cat("The median number of steps per day is ",round(median(daysums$x, na.rm=TRUE)
 ## What is the average daily activity pattern?
 
 ```{r echo=TRUE}
-timemeansw <- colMeans(activityw[,-1], na.rm=TRUE)
-# Calculate times in decimal hours and then do the plot.
-dectimesw <- 100 * (as.numeric(names(timemeansw)) %/% 100 + as.numeric(names(timemeansw)) %% 100 / 60)
-plot(dectimesw, timemeansw, type="l", xlab="Interval", ylab="Number of Steps", main=" Average Daily Activity Pattern")
-
 timemeans <- aggregate(activity[,"steps"], by=list(interval=activity$interval), FUN=mean, na.rm=TRUE)
 timemeans$dectime <- 100 * (timemeans$interval %/% 100 + timemeans$interval %% 100 / 60)
 plot(timemeans$dectime, timemeans$x, type="l", xlab="Interval", ylab="Number of Steps", main=" Average Daily Activity Pattern")
